@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment & Translation Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e8f0fe;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sentiment & Hindi Translation</h1>
+    
+    <form id="predictForm">
+        <label for="inputText">Enter English Text (One or more, separated by newlines):</label><br>
+        <textarea id="inputText" placeholder="e.g. This is awesome!\nI hate this product."></textarea><br>
+        <button type="submit">Predict</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script>
+        document.getElementById("predictForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const inputText = document.getElementById("inputText").value.trim();
+            if (!inputText) return;
+
+            const texts = inputText.split("\n").filter(line => line.trim() !== "");
+
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ texts })
+            });
+
+            const resultDiv = document.getElementById("results");
+            resultDiv.innerHTML = "";
+
+            const data = await response.json();
+
+            if (data.error) {
+                resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                return;
+            }
+
+            data.forEach(item => {
+                const block = document.createElement("div");
+                block.classList.add("result");
+                block.innerHTML = `
+                    <strong>Text:</strong> ${item.text}<br>
+                    <strong>Translation:</strong> ${item.translation}<br>
+                    <strong>Sentiment:</strong> ${item.sentiment}<br>
+                    <strong>Confidence:</strong> ${item.confidence.toFixed(2)}
+                `;
+                resultDiv.appendChild(block);
+            });
+        });
+    </script>
+</body>
+</html>
