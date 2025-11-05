@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# ignore pt files to load in github
+*.pt
+*.safetensors
+
 # C extensions
 *.so
 
